@@ -1,147 +1,300 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>教學手冊</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>教學手冊</title>
 
-<style>
-body{
-    margin:0;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto;
-    background: linear-gradient(135deg,#0f172a,#1e293b);
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-}
+  <style>
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans TC", Arial;
+      background: linear-gradient(135deg,#0f172a,#1e293b);
+      color:#fff;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      padding:24px;
+    }
 
-.container{
-    width:900px;
-    max-width:95%;
-    background:rgba(255,255,255,0.05);
-    border-radius:20px;
-    padding:30px;
-    box-shadow:0 20px 50px rgba(0,0,0,0.4);
-    backdrop-filter: blur(20px);
-}
+    .container{
+      width:900px;
+      max-width:95%;
+      background:rgba(255,255,255,0.05);
+      border-radius:20px;
+      padding:26px;
+      box-shadow:0 20px 50px rgba(0,0,0,0.4);
+      backdrop-filter: blur(18px);
+    }
 
-.viewer{
-    position:relative;
-    text-align:center;
-}
+    .viewer{
+      position:relative;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding: 10px;
+    }
 
-.viewer img{
-    max-width:100%;
-    max-height:450px;
-    border-radius:15px;
-    transition: transform 0.4s ease, opacity 0.4s ease;
-}
+    /* ✅ 兩張圖片重疊做轉場 */
+    #slideA, #slideB{
+      max-width:100%;
+      max-height:450px;
+      border-radius:15px;
+      transition: transform 0.42s ease, opacity 0.42s ease;
+      will-change: transform, opacity;
+      box-shadow: 0 10px 40px rgba(0,0,0,.35);
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+    #slideA{
+      opacity:1;
+      transform: translateX(0);
+      position:relative;
+      z-index:1;
+    }
+    #slideB{
+      position:absolute;
+      z-index:2;
+      opacity:0;
+      /* 初始位置給 JS 控制 */
+      transform: translateX(0);
+    }
 
-.arrow{
-    position:absolute;
-    top:50%;
-    transform:translateY(-50%);
-    font-size:30px;
-    cursor:pointer;
-    user-select:none;
-    padding:10px 15px;
-    border-radius:50%;
-    background:rgba(255,255,255,0.1);
-    transition:0.2s;
-}
+    /* ✅ 圓形左右按鈕 */
+    .arrow{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      width:44px;
+      height:44px;
+      display:grid;
+      place-items:center;
+      font-size:28px;
+      line-height:1;
+      cursor:pointer;
+      user-select:none;
+      border-radius:50%;
+      background:rgba(15,23,42,0.55);
+      border:1px solid rgba(255,255,255,0.18);
+      box-shadow:0 10px 30px rgba(0,0,0,0.25);
+      transition: transform 140ms ease, background 140ms ease, box-shadow 180ms ease, opacity 140ms ease;
+      backdrop-filter: blur(10px);
+      z-index: 5;
+    }
+    .arrow:hover{
+      background:rgba(99,102,241,0.28);
+      box-shadow:0 10px 35px rgba(99,102,241,0.18);
+      transform:translateY(-50%) scale(1.05);
+    }
+    .arrow:active{
+      transform:translateY(-50%) scale(0.98);
+    }
+    .arrow.disabled{
+      opacity:0.35;
+      pointer-events:none;
+    }
 
-.arrow:hover{
-    background:rgba(99,102,241,0.5);
-}
+    .left{ left:10px; }
+    .right{ right:10px; }
 
-.left{ left:-20px; }
-.right{ right:-20px; }
+    .text{
+      margin-top:18px;
+      line-height:1.7;
+      font-size:16px;
+      opacity:0.92;
+      white-space: pre-line;
+    }
 
-.text{
-    margin-top:20px;
-    line-height:1.6;
-    font-size:16px;
-    opacity:0.9;
-}
+    .step{
+      margin-top:12px;
+      font-size:13px;
+      opacity:0.65;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
 
-.step{
-    margin-top:15px;
-    font-size:13px;
-    opacity:0.6;
-}
-</style>
+    .hint{
+      font-size:12px;
+      opacity:0.7;
+    }
+
+    .kbd{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      opacity:0.65;
+      font-size:12px;
+    }
+    .key{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px;
+      padding:2px 8px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+    }
+  </style>
 </head>
 
 <body>
-
-<div class="container">
+  <div class="container">
 
     <div class="viewer">
-        <div class="arrow left" onclick="prev()">‹</div>
-        <img id="slide" src="assets/step1.png">
-        <div class="arrow right" onclick="next()">›</div>
+      <div class="arrow left" id="btnPrev" title="上一頁 (←)">‹</div>
+
+      <!-- 兩張圖疊加：用來做滑動轉場 -->
+      <img id="slideA" src="assets/step1.png" alt="step image A">
+      <img id="slideB" src="" alt="step image B">
+
+      <div class="arrow right" id="btnNext" title="下一頁 (→)">›</div>
     </div>
 
-    <div class="text" id="text">
-        這是步驟 1 的說明文字。
+    <div class="text" id="text">載入中...</div>
+
+    <div class="step">
+      <div>
+        <span id="stepLabel">Step 1 / 1</span>
+        <span class="hint" id="hint"></span>
+      </div>
+      <div class="kbd">
+        <span class="key">←</span><span class="key">→</span>
+      </div>
     </div>
 
-    <div class="step" id="step">
-        Step 1 / 2
-    </div>
+  </div>
 
-</div>
+  <script>
+    // ✅ 只要改這裡：圖片放 docs/assets/ 底下
+    const steps = [
+      {
+        img: "assets/step1.png",
+        text: "這是步驟 1 的說明文字。\n你可以換行。\n也可以寫注意事項。",
+        hint: "提示：用左右箭頭切換"
+      },
+      {
+        img: "assets/step2.png",
+        text: "這是步驟 2 的說明文字。\n這一步可以描述操作細節。",
+        hint: "提示：也支援鍵盤 ← →"
+      },
+    ];
 
-<script>
-const steps = [
-    {
-        img:"assets/step1.png",
-        text:"這是步驟 1 的說明文字。"
-    },
-    {
-        img:"assets/step2.png",
-        text:"這是步驟 2 的說明文字。"
+    let index = 0;
+    let usingA = true;
+    let animating = false;
+
+    const slideA = document.getElementById("slideA");
+    const slideB = document.getElementById("slideB");
+    const textEl = document.getElementById("text");
+    const stepLabel = document.getElementById("stepLabel");
+    const hintEl = document.getElementById("hint");
+    const btnPrev = document.getElementById("btnPrev");
+    const btnNext = document.getElementById("btnNext");
+
+    function setNavState(){
+      btnPrev.classList.toggle("disabled", index === 0);
+      btnNext.classList.toggle("disabled", index === steps.length - 1);
+      stepLabel.textContent = `Step ${index + 1} / ${steps.length}`;
+      hintEl.textContent = steps[index].hint || "";
     }
-];
 
-let index = 0;
-
-function update(){
-    const slide = document.getElementById("slide");
-    const text = document.getElementById("text");
-    const step = document.getElementById("step");
-
-    slide.style.opacity = 0;
-
-    setTimeout(()=>{
-        slide.src = steps[index].img;
-        text.innerText = steps[index].text;
-        step.innerText = `Step ${index+1} / ${steps.length}`;
-        slide.style.opacity = 1;
-    },200);
-}
-
-function next(){
-    if(index < steps.length-1){
-        index++;
-        update();
+    function setText(){
+      textEl.textContent = steps[index].text || "";
     }
-}
 
-function prev(){
-    if(index > 0){
-        index--;
-        update();
+    function animateTo(nextIndex, dir){
+      if (animating) return;
+      if (nextIndex < 0 || nextIndex >= steps.length) return;
+
+      animating = true;
+
+      const current = usingA ? slideA : slideB;
+      const next = usingA ? slideB : slideA;
+
+      // 你可以調整位移距離（px）
+      const outX = (dir === "next") ? -30 : 30;
+      const inX  = (dir === "next") ? 30 : -30;
+
+      next.src = steps[nextIndex].img;
+
+      // next 先在旁邊 + 透明
+      next.style.transition = "none";
+      next.style.opacity = "0";
+      next.style.transform = `translateX(${inX}px)`;
+
+      // 強制 reflow 讓 transition 生效
+      next.offsetHeight;
+
+      // 啟動動畫：current 出去、next 進來
+      current.style.transition = "transform 0.42s ease, opacity 0.42s ease";
+      next.style.transition = "transform 0.42s ease, opacity 0.42s ease";
+
+      requestAnimationFrame(() => {
+        current.style.opacity = "0";
+        current.style.transform = `translateX(${outX}px)`;
+
+        next.style.opacity = "1";
+        next.style.transform = "translateX(0)";
+      });
+
+      // 動畫結束後收尾
+      const onDone = () => {
+        // 把 current 重置成待機狀態（避免下次跳動）
+        current.style.transition = "none";
+        current.style.opacity = "0";
+        current.style.transform = "translateX(0)";
+
+        usingA = !usingA;
+        index = nextIndex;
+
+        setText();
+        setNavState();
+
+        animating = false;
+        next.removeEventListener("transitionend", onDone);
+      };
+
+      next.addEventListener("transitionend", onDone, { once: true });
     }
-}
 
-document.addEventListener("keydown", e=>{
-    if(e.key === "ArrowRight") next();
-    if(e.key === "ArrowLeft") prev();
-});
-</script>
+    function next(){
+      if (index >= steps.length - 1) return;
+      animateTo(index + 1, "next");
+    }
 
+    function prev(){
+      if (index <= 0) return;
+      animateTo(index - 1, "prev");
+    }
+
+    // 按鈕
+    btnNext.addEventListener("click", next);
+    btnPrev.addEventListener("click", prev);
+
+    // 鍵盤
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") next();
+      if (e.key === "ArrowLeft") prev();
+    });
+
+    // 初始化
+    (function init(){
+      if (!steps.length) {
+        textEl.textContent = "請在 steps 裡加入教學資料。";
+        btnPrev.classList.add("disabled");
+        btnNext.classList.add("disabled");
+        return;
+      }
+      slideA.src = steps[0].img;
+      slideA.style.opacity = "1";
+      slideA.style.transform = "translateX(0)";
+      slideB.style.opacity = "0";
+      setText();
+      setNavState();
+    })();
+  </script>
 </body>
 </html>
