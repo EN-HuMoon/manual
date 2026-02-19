@@ -6,6 +6,11 @@
   <title>花月谷教學手冊</title>
 
   <style>
+    :root{
+      /* ✅ 控制圖片顯示框高度（桌機/平板） */
+      --viewerH: 460px;
+    }
+
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans TC", Arial;
@@ -65,10 +70,15 @@
       padding: 10px 40px; /* 左右留空，按鈕不壓圖 */
     }
 
-    /* ✅ 兩張圖片重疊做「平移 + 淡入淡出」 */
+    /* ✅ 兩張圖片重疊做「平移 + 淡入淡出」
+       ✅ 手機不爆：固定顯示框高度 + contain
+    */
     #slideA, #slideB{
-      max-width:100%;
-      max-height:460px;
+      width: 100%;
+      height: var(--viewerH);   /* ✅ 關鍵：固定顯示框高度 */
+      object-fit: contain;      /* ✅ 關鍵：完整塞進框內，不裁切 */
+      object-position: center;
+
       border-radius:16px;
       transition: transform 0.42s ease, opacity 0.42s ease;
       will-change: transform, opacity;
@@ -76,9 +86,11 @@
       user-select:none;
       -webkit-user-drag:none;
 
-      /* ✅ 一點點抗閃爍：讓瀏覽器更穩定合成 */
       backface-visibility: hidden;
       transform-style: preserve-3d;
+
+      /* ✅ 讓透明區也好看一點（可刪） */
+      background: rgba(255,255,255,0.03);
     }
     #slideA{
       opacity:1;
@@ -91,6 +103,8 @@
       z-index:2;
       opacity:0;
       transform: translateX(0);
+      inset: 0;
+      margin: auto;
     }
 
     /* ✅ 圓形箭頭 */
@@ -148,7 +162,7 @@
       opacity:0.92;
       white-space: pre-line;
 
-      height: 140px;     /* 你想更高就改 180/220 */
+      height: 140px;
       overflow:auto;
       padding-right: 6px;
       scrollbar-gutter: stable;
@@ -197,6 +211,41 @@
       border:1px solid rgba(255,255,255,.16);
       background: rgba(255,255,255,.06);
     }
+
+    /* ✅ 手機版調整（重點在圖片高度與間距） */
+    @media (max-width: 520px){
+      body{ padding:16px; }
+
+      .container{
+        padding:18px 16px 20px;
+        border-radius:18px;
+      }
+
+      .tabs{ gap:10px; }
+      .tab{ padding:9px 14px; font-size:14px; }
+
+      .viewer{
+        padding: 6px 24px; /* 左右縮小 */
+      }
+
+      :root{
+        --viewerH: 230px; /* ✅ 手機圖片框高度 */
+      }
+
+      .arrow{
+        width:46px;
+        height:46px;
+      }
+
+      /* ✅ 按鈕不要太外面，避免被瀏覽器 UI 擋到 */
+      .left{ left:-10px; }
+      .right{ right:-10px; }
+
+      .text{
+        height: 160px; /* 手機字大一點時，給更多空間 */
+        font-size:16px;
+      }
+    }
   </style>
 </head>
 
@@ -213,7 +262,6 @@
     <div class="viewer">
       <div class="arrow left" id="btnPrev" title="上一頁 (←)">‹</div>
 
-      <!-- ✅ 兩張圖疊加：保留平移 + 淡入淡出 -->
       <img id="slideA" src="" alt="step image A">
       <img id="slideB" src="" alt="step image B">
 
@@ -237,7 +285,6 @@
   </div>
 
   <script>
-    /* ✅ 三類攻略步驟：保留你目前資料 */
     const guides = {
       newbie: [
         {
@@ -291,35 +338,16 @@
           hint: "提示：用左右箭頭切換也支援鍵盤 ← →"
         },
       ],
-
       enhance: [
-        {
-          img: "assets/step1.png",
-          text: "（強化攻略）\n這裡先放第一步內容。\n把圖片與文字換成你的強化教學即可。",
-          hint: "提示：用左右箭頭切換"
-        },
-        {
-          img: "assets/step2.png",
-          text: "（強化攻略）\n第二步內容占位。\n之後可擴充到更多步驟。",
-          hint: "提示：也支援鍵盤 ← →"
-        },
+        { img:"assets/step1.png", text:"（強化攻略）\n這裡先放第一步內容。\n把圖片與文字換成你的強化教學即可。", hint:"提示：用左右箭頭切換" },
+        { img:"assets/step2.png", text:"（強化攻略）\n第二步內容占位。\n之後可擴充到更多步驟。", hint:"提示：也支援鍵盤 ← →" },
       ],
-
       boss: [
-        {
-          img: "assets/step1.png",
-          text: "（BOSS攻略）\n這裡先放第一步內容。\n把圖片與文字換成你的BOSS教學即可。",
-          hint: "提示：用左右箭頭切換"
-        },
-        {
-          img: "assets/step2.png",
-          text: "（BOSS攻略）\n第二步內容占位。\n之後可擴充到更多步驟。",
-          hint: "提示：也支援鍵盤 ← →"
-        },
+        { img:"assets/step1.png", text:"（BOSS攻略）\n這裡先放第一步內容。\n把圖片與文字換成你的BOSS教學即可。", hint:"提示：用左右箭頭切換" },
+        { img:"assets/step2.png", text:"（BOSS攻略）\n第二步內容占位。\n之後可擴充到更多步驟。", hint:"提示：也支援鍵盤 ← →" },
       ],
     };
 
-    // ===== 狀態 =====
     let currentGuide = "newbie";
     let steps = guides[currentGuide];
 
@@ -327,7 +355,6 @@
     let usingA = true;
     let animating = false;
 
-    // ===== DOM =====
     const slideA = document.getElementById("slideA");
     const slideB = document.getElementById("slideB");
     const textEl = document.getElementById("text");
@@ -346,13 +373,10 @@
       const p = new Promise((resolve) => {
         const img = new Image();
         img.onload = async () => {
-          // decode 可以避免「載入完成但解碼未完成」造成的瞬間閃爍
-          if (img.decode) {
-            try { await img.decode(); } catch (e) {}
-          }
+          if (img.decode) { try { await img.decode(); } catch (e) {} }
           resolve();
         };
-        img.onerror = () => resolve(); // 不阻塞
+        img.onerror = () => resolve();
         img.src = src;
       });
 
@@ -361,7 +385,6 @@
     }
 
     async function preloadGuideImages(list){
-      // 不用 await 全部也行，但你這種教學頁通常圖片不多，先 preload 會最穩
       await Promise.all(list.map(s => preloadImage(s.img)));
     }
 
@@ -383,8 +406,6 @@
 
     async function hardSetStep(i){
       index = i;
-
-      // ✅ 確保第一張也載入/解碼完成再顯示（避免初次切換殘影）
       await preloadImage(steps[index].img);
 
       slideA.src = steps[index].img;
@@ -400,7 +421,6 @@
       usingA = true;
       animating = false;
 
-      // 恢復 transition（避免下一次動畫不見）
       slideA.offsetHeight;
       slideA.style.transition = "transform 0.42s ease, opacity 0.42s ease";
       slideB.style.transition = "transform 0.42s ease, opacity 0.42s ease";
@@ -421,32 +441,27 @@
       const outX = (dir === "next") ? -30 : 30;
       const inX  = (dir === "next") ? 30 : -30;
 
-      // ✅ 先確保「下一張」已載入/解碼完成，再開始動畫（根治閃圖）
       const nextSrc = steps[nextIndex].img;
       await preloadImage(nextSrc);
 
       next.src = nextSrc;
 
-      // next 先在旁邊 + 透明（先關 transition）
       next.style.transition = "none";
       next.style.opacity = "0";
       next.style.transform = `translateX(${inX}px)`;
       next.offsetHeight;
 
-      // 開 transition
       current.style.transition = "transform 0.42s ease, opacity 0.42s ease";
       next.style.transition = "transform 0.42s ease, opacity 0.42s ease";
 
       requestAnimationFrame(() => {
         current.style.opacity = "0";
         current.style.transform = `translateX(${outX}px)`;
-
         next.style.opacity = "1";
         next.style.transform = "translateX(0)";
       });
 
       const onDone = () => {
-        // current 重置並隱藏（但不清 src，避免某些瀏覽器重繪抖動）
         current.style.transition = "none";
         current.style.opacity = "0";
         current.style.transform = "translateX(0)";
@@ -468,23 +483,19 @@
       if (index >= steps.length - 1) return;
       animateTo(index + 1, "next");
     }
-
     function prev(){
       if (index <= 0) return;
       animateTo(index - 1, "prev");
     }
 
-    // 按鈕
     btnNext.addEventListener("click", next);
     btnPrev.addEventListener("click", prev);
 
-    // 鍵盤
     document.addEventListener("keydown", (e) => {
       if (e.key === "ArrowRight") next();
       if (e.key === "ArrowLeft") prev();
     });
 
-    // 分類切換
     tabs.forEach(t => {
       t.addEventListener("click", async () => {
         const g = t.getAttribute("data-guide");
@@ -502,14 +513,11 @@
           setNavState();
           return;
         }
-
-        // ✅ 切換攻略時先 preload 該攻略，第一頁切換不閃
         await preloadGuideImages(steps);
         await hardSetStep(0);
       });
     });
 
-    // 初始化
     (async function init(){
       if (!steps.length) {
         textEl.textContent = "請在 guides 裡加入教學資料。";
@@ -517,8 +525,6 @@
         btnNext.classList.add("disabled");
         return;
       }
-
-      // ✅ 初始化先 preload 當前攻略，避免第一次換頁閃上一張
       await preloadGuideImages(steps);
       await hardSetStep(0);
     })();
