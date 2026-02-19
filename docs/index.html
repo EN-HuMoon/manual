@@ -33,7 +33,7 @@
       display:flex;
       justify-content:center;
       align-items:center;
-      padding: 10px 36px; /* ✅ 左右留空，按鈕更不會壓到圖片 */
+      padding: 10px 36px; /* ✅ 左右留空 */
     }
 
     /* ✅ 兩張圖片重疊做轉場 */
@@ -94,11 +94,11 @@
       pointer-events:none;
     }
 
-    /* ✅ 按鈕往外挪，不壓到圖片 */
+    /* ✅ 按鈕往外挪 */
     .left{ left:-18px; }
     .right{ right:-18px; }
 
-    /* ✅ 圖片下方的現代玻璃資訊區（第二層背景） */
+    /* ✅ 圖片下方：現代玻璃資訊區（第二層背景） */
     .panel{
       margin-top: 18px;
       padding: 16px 16px 14px;
@@ -109,20 +109,39 @@
       backdrop-filter: blur(14px);
     }
 
+    /* ✅ 防跳動關鍵：固定文字區高度（你想更高就改這裡） */
     .text{
       margin-top:0;
       line-height:1.7;
       font-size:16px;
       opacity:0.92;
       white-space: pre-line;
+
+      height: 140px;          /* ✅ 固定高度：不同步驟行數不會讓版面跳 */
+      overflow: auto;         /* ✅ 太長就滾動，不會撐高 */
+      padding-right: 6px;     /* ✅ 留給捲軸一點空間 */
+      scrollbar-gutter: stable; /* ✅ 捲軸出現也不抖(支援的瀏覽器會更穩) */
+
+      /* 讓文字切換也有一點淡入感 */
+      transition: opacity .18s ease;
     }
+
+    /* 捲軸樣式（可刪，但更現代） */
+    .text::-webkit-scrollbar{ width:10px; }
+    .text::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,.18);
+      border-radius: 999px;
+      border: 2px solid rgba(0,0,0,0);
+      background-clip: padding-box;
+    }
+    .text::-webkit-scrollbar-track{ background: rgba(255,255,255,.06); border-radius: 999px; }
 
     .step{
       margin-top:12px;
       padding-top: 10px;
       border-top: 1px solid rgba(255,255,255,.10);
       font-size:13px;
-      opacity:0.75;
+      opacity:0.78;
       display:flex;
       justify-content:space-between;
       align-items:center;
@@ -167,7 +186,7 @@
       <div class="arrow right" id="btnNext" title="下一頁 (→)">›</div>
     </div>
 
-    <!-- ✅ 第二層背景：現代玻璃卡片區 -->
+    <!-- ✅ 第二層背景：現代玻璃卡片區（文字高度固定，不跳動） -->
     <div class="panel">
       <div class="text" id="text">載入中...</div>
 
@@ -194,7 +213,7 @@
       },
       {
         img: "assets/step2.png",
-        text: "這是步驟 2 的說明文字。\n這一步可以描述操作細節。",
+        text: "這是步驟 2 的說明文字。\n這一步可以描述操作細節。\n如果文字多一點，也不會讓整個頁面高度跳動，只會在文字框內滾動。",
         hint: "提示：也支援鍵盤 ← →"
       },
     ];
@@ -219,7 +238,13 @@
     }
 
     function setText(){
-      textEl.textContent = steps[index].text || "";
+      // 讓文字切換更順：先淡出、換字、淡入（但不改高度）
+      textEl.style.opacity = "0.0";
+      setTimeout(() => {
+        textEl.textContent = steps[index].text || "";
+        textEl.scrollTop = 0; // ✅ 每步回到文字頂端
+        textEl.style.opacity = "0.92";
+      }, 90);
     }
 
     function animateTo(nextIndex, dir){
