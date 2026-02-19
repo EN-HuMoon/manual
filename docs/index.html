@@ -1,253 +1,449 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>花月谷教學手冊</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>花月谷教學手冊</title>
 
-<style>
-body{
-  margin:0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto;
-  background: linear-gradient(135deg,#0f172a,#1e293b);
-  color:#fff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-  padding:24px;
-}
+  <style>
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans TC", Arial;
+      background: linear-gradient(135deg,#0f172a,#1e293b);
+      color:#fff;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      padding:24px;
+    }
 
-.container{
-  width:1000px;
-  max-width:95%;
-  background:rgba(255,255,255,0.05);
-  border-radius:20px;
-  padding:26px;
-  box-shadow:0 20px 50px rgba(0,0,0,0.4);
-  backdrop-filter: blur(18px);
-}
+    .container{
+      width:1000px;
+      max-width:95%;
+      background:rgba(255,255,255,0.05);
+      border-radius:20px;
+      padding:22px 22px 26px;
+      box-shadow:0 20px 50px rgba(0,0,0,0.4);
+      backdrop-filter: blur(18px);
+    }
 
-/* 🔥 上方分類按鈕 */
-.tabs{
-  display:flex;
-  gap:12px;
-  margin-bottom:18px;
-}
+    /* ✅ 上方分類按鈕（現代玻璃風） */
+    .tabs{
+      display:flex;
+      gap:12px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    .tab{
+      padding:9px 16px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:14px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.15);
+      transition: transform 140ms ease, background 180ms ease, box-shadow 180ms ease;
+      user-select:none;
+    }
+    .tab:hover{
+      background:rgba(99,102,241,0.22);
+      box-shadow:0 10px 26px rgba(99,102,241,0.12);
+      transform: translateY(-1px);
+    }
+    .tab.active{
+      background: linear-gradient(90deg, rgba(99,102,241,.95), rgba(34,211,238,.85));
+      border-color: transparent;
+      box-shadow:0 12px 30px rgba(99,102,241,0.28);
+    }
 
-.tab{
-  padding:8px 18px;
-  border-radius:999px;
-  cursor:pointer;
-  font-size:14px;
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.15);
-  transition:0.25s;
-}
+    /* ✅ 圖片區 */
+    .viewer{
+      position:relative;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding: 10px 40px; /* 左右留空，按鈕不壓圖 */
+    }
 
-.tab:hover{
-  background:rgba(99,102,241,0.25);
-}
+    /* ✅ 兩張圖片重疊做「平移 + 淡入淡出」 */
+    #slideA, #slideB{
+      max-width:100%;
+      max-height:460px;
+      border-radius:16px;
+      transition: transform 0.42s ease, opacity 0.42s ease;
+      will-change: transform, opacity;
+      box-shadow: 0 10px 40px rgba(0,0,0,.35);
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+    #slideA{
+      opacity:1;
+      transform: translateX(0);
+      position:relative;
+      z-index:1;
+    }
+    #slideB{
+      position:absolute;
+      z-index:2;
+      opacity:0;
+      transform: translateX(0);
+    }
 
-.tab.active{
-  background:linear-gradient(90deg,#6366f1,#22d3ee);
-  border:none;
-  box-shadow:0 6px 20px rgba(99,102,241,0.4);
-}
+    /* ✅ 圓形箭頭 */
+    .arrow{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      width:44px;
+      height:44px;
+      display:grid;
+      place-items:center;
+      font-size:28px;
+      line-height:1;
+      cursor:pointer;
+      user-select:none;
+      border-radius:50%;
+      background:rgba(15,23,42,0.55);
+      border:1px solid rgba(255,255,255,0.18);
+      box-shadow:0 10px 30px rgba(0,0,0,0.25);
+      transition: transform 140ms ease, background 140ms ease, box-shadow 180ms ease, opacity 140ms ease;
+      backdrop-filter: blur(10px);
+      z-index: 5;
+    }
+    .arrow:hover{
+      background:rgba(99,102,241,0.28);
+      box-shadow:0 10px 35px rgba(99,102,241,0.18);
+      transform:translateY(-50%) scale(1.05);
+    }
+    .arrow:active{
+      transform:translateY(-50%) scale(0.98);
+    }
+    .arrow.disabled{
+      opacity:0.35;
+      pointer-events:none;
+    }
+    .left{ left:-18px; }
+    .right{ right:-18px; }
 
-/* 圖片區 */
-.viewer{
-  position:relative;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding: 10px 40px;
-}
+    /* ✅ 圖片下方：現代玻璃資訊區 */
+    .panel{
+      margin-top: 18px;
+      padding: 16px 16px 14px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 14px 40px rgba(0,0,0,.28);
+      backdrop-filter: blur(14px);
+    }
 
-#slideA, #slideB{
-  max-width:100%;
-  max-height:450px;
-  border-radius:15px;
-  transition: transform 0.4s ease, opacity 0.4s ease;
-  will-change: transform, opacity;
-  box-shadow: 0 10px 40px rgba(0,0,0,.35);
-}
+    /* ✅ 防跳動：固定文字高度 */
+    .text{
+      margin-top:0;
+      line-height:1.7;
+      font-size:16px;
+      opacity:0.92;
+      white-space: pre-line;
 
-#slideA{ opacity:1; position:relative; z-index:1; }
-#slideB{ position:absolute; opacity:0; z-index:2; }
+      height: 140px;     /* 你想更高就改 180/220 */
+      overflow:auto;
+      padding-right: 6px;
+      scrollbar-gutter: stable;
+      transition: opacity .18s ease;
+    }
+    .text::-webkit-scrollbar{ width:10px; }
+    .text::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,.18);
+      border-radius: 999px;
+      border: 2px solid rgba(0,0,0,0);
+      background-clip: padding-box;
+    }
+    .text::-webkit-scrollbar-track{ background: rgba(255,255,255,.06); border-radius: 999px; }
 
-/* 圓形箭頭 */
-.arrow{
-  position:absolute;
-  top:50%;
-  transform:translateY(-50%);
-  width:44px;
-  height:44px;
-  display:grid;
-  place-items:center;
-  border-radius:50%;
-  cursor:pointer;
-  background:rgba(15,23,42,0.55);
-  border:1px solid rgba(255,255,255,0.2);
-  transition:0.2s;
-}
+    .stepbar{
+      margin-top:12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      font-size:13px;
+      opacity:0.78;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
 
-.arrow:hover{
-  background:rgba(99,102,241,0.35);
-}
+    .hint{
+      font-size:12px;
+      opacity:0.85;
+      margin-left: 6px;
+    }
 
-.left{ left:-18px; }
-.right{ right:-18px; }
-
-/* 下方資訊區 */
-.panel{
-  margin-top:18px;
-  padding:16px;
-  border-radius:16px;
-  background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.05));
-  border:1px solid rgba(255,255,255,.14);
-  backdrop-filter: blur(14px);
-}
-
-.text{
-  line-height:1.7;
-  font-size:16px;
-  height:140px;
-  overflow:auto;
-  white-space:pre-line;
-}
-
-.step{
-  margin-top:12px;
-  font-size:13px;
-  opacity:0.7;
-}
-</style>
+    .kbd{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      font-size:12px;
+      opacity:0.85;
+    }
+    .key{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px;
+      padding:2px 8px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+    }
+  </style>
 </head>
 
 <body>
-<div class="container">
+  <div class="container">
 
-  <!-- 🔥 分類按鈕 -->
-  <div class="tabs">
-    <div class="tab active" onclick="switchGuide('newbie', this)">新手攻略</div>
-    <div class="tab" onclick="switchGuide('enhance', this)">強化攻略</div>
-    <div class="tab" onclick="switchGuide('boss', this)">BOSS攻略</div>
+    <!-- ✅ 分類按鈕 -->
+    <div class="tabs">
+      <div class="tab active" data-guide="newbie">新手攻略</div>
+      <div class="tab" data-guide="enhance">強化攻略</div>
+      <div class="tab" data-guide="boss">BOSS攻略</div>
+    </div>
+
+    <div class="viewer">
+      <div class="arrow left" id="btnPrev" title="上一頁 (←)">‹</div>
+
+      <!-- ✅ 兩張圖疊加：保留平移 + 淡入淡出 -->
+      <img id="slideA" src="" alt="step image A">
+      <img id="slideB" src="" alt="step image B">
+
+      <div class="arrow right" id="btnNext" title="下一頁 (→)">›</div>
+    </div>
+
+    <div class="panel">
+      <div class="text" id="text">載入中...</div>
+
+      <div class="stepbar">
+        <div>
+          <span id="stepLabel">Step 1 / 1</span>
+          <span class="hint" id="hint"></span>
+        </div>
+        <div class="kbd">
+          <span class="key">←</span><span class="key">→</span>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <div class="viewer">
-    <div class="arrow left" onclick="prev()">‹</div>
-    <img id="slideA">
-    <img id="slideB">
-    <div class="arrow right" onclick="next()">›</div>
-  </div>
+  <script>
+    /* ✅ 三類攻略步驟：你給的新手攻略已完整放進來 */
+    const guides = {
+      newbie: [
+        {
+          img: "assets/step1.png",
+          text: "歡迎來到花月谷。\n接下來可以參考攻略遊玩。\n任何疑問也可以在論壇或群內詢問。",
+          hint: "提示：用左右箭頭切換也支援鍵盤 ← →"
+        },
+        {
+          img: "assets/step2.png",
+          text: "註冊帳號和密碼。\n進入登入畫面後直接填入新的帳號密碼。\n即可完成註冊,請保護好自己的帳號密碼避免遺失。",
+          hint: "提示：用左右箭頭切換也支援鍵盤 ← →"
+        },
+        {
+          img: "assets/step3.png",
+          text: "進入角色選擇畫面後。\n先點擊創立角色,選擇自己喜歡的職業即可。",
+          hint: "提示：用左右箭頭切換也支援鍵盤 ← →"
+        },
+        {
+          img: "assets/step4.png",
+          text: "進入遊戲後會自動升至200級。\n背包內的[消耗欄]會給予一個萬能選單。\n之後所有功能都會依賴這個萬能選單工具。",
+          hint: "提示：用左右箭頭切換也支援鍵盤 ← →"
+        },
+      ],
 
-  <div class="panel">
-    <div class="text" id="text"></div>
-    <div class="step" id="step"></div>
-  </div>
+      /* 先幫你放「占位」內容，你之後把 img/text 換成你的圖與文字就行 */
+      enhance: [
+        {
+          img: "assets/step1.png",
+          text: "（強化攻略）\n這裡先放第一步內容。\n把圖片與文字換成你的強化教學即可。",
+          hint: "提示：用左右箭頭切換"
+        },
+        {
+          img: "assets/step2.png",
+          text: "（強化攻略）\n第二步內容占位。\n之後可擴充到更多步驟。",
+          hint: "提示：也支援鍵盤 ← →"
+        },
+      ],
 
-</div>
+      boss: [
+        {
+          img: "assets/step1.png",
+          text: "（BOSS攻略）\n這裡先放第一步內容。\n把圖片與文字換成你的BOSS教學即可。",
+          hint: "提示：用左右箭頭切換"
+        },
+        {
+          img: "assets/step2.png",
+          text: "（BOSS攻略）\n第二步內容占位。\n之後可擴充到更多步驟。",
+          hint: "提示：也支援鍵盤 ← →"
+        },
+      ],
+    };
 
-<script>
-/* 🔥 三種攻略 */
-const guides = {
+    // ===== 狀態 =====
+    let currentGuide = "newbie";
+    let steps = guides[currentGuide];
 
-  newbie: [
-    {
-      img:"assets/step1.png",
-      text:"歡迎來到花月谷。\n接下來可以參考攻略遊玩。\n任何疑問也可以在論壇或群內詢問。"
-    },
-    {
-      img:"assets/step2.png",
-      text:"註冊帳號和密碼。\n進入登入畫面後直接填入新的帳號密碼。\n即可完成註冊。"
-    },
-    {
-      img:"assets/step3.png",
-      text:"進入角色選擇畫面後。\n先點擊創立角色,選擇自己喜歡的職業即可。"
-    },
-    {
-      img:"assets/step4.png",
-      text:"進入遊戲後會自動升至200級。\n背包內的[消耗欄]會給予萬能選單。"
+    let index = 0;
+    let usingA = true;
+    let animating = false;
+
+    // ===== DOM =====
+    const slideA = document.getElementById("slideA");
+    const slideB = document.getElementById("slideB");
+    const textEl = document.getElementById("text");
+    const stepLabel = document.getElementById("stepLabel");
+    const hintEl = document.getElementById("hint");
+    const btnPrev = document.getElementById("btnPrev");
+    const btnNext = document.getElementById("btnNext");
+    const tabs = Array.from(document.querySelectorAll(".tab"));
+
+    function setNavState(){
+      btnPrev.classList.toggle("disabled", index === 0);
+      btnNext.classList.toggle("disabled", index === steps.length - 1);
+      stepLabel.textContent = `Step ${index + 1} / ${steps.length}`;
+      hintEl.textContent = steps[index].hint || "";
     }
-  ],
 
-  enhance: [
-    {
-      img:"assets/step1.png",
-      text:"強化系統介紹。\n裝備可以透過萬能選單進行強化。"
-    },
-    {
-      img:"assets/step2.png",
-      text:"強化需要消耗強化精華。\n等級越高消耗越多。"
+    function setTextImmediate(){
+      textEl.style.opacity = "0.0";
+      setTimeout(() => {
+        textEl.textContent = steps[index].text || "";
+        textEl.scrollTop = 0;
+        textEl.style.opacity = "0.92";
+      }, 90);
     }
-  ],
 
-  boss: [
-    {
-      img:"assets/step3.png",
-      text:"BOSS攻略介紹。\n每日BOSS可獲得高級材料。"
-    },
-    {
-      img:"assets/step4.png",
-      text:"建議組隊挑戰高階BOSS。"
+    function hardSetStep(i){
+      // 切換攻略時：不跑動畫，直接顯示第一步（更穩）
+      index = i;
+
+      slideA.src = steps[index].img;
+      slideA.style.opacity = "1";
+      slideA.style.transform = "translateX(0)";
+
+      slideB.src = "";
+      slideB.style.opacity = "0";
+      slideB.style.transform = "translateX(0)";
+
+      usingA = true;
+      animating = false;
+
+      setTextImmediate();
+      setNavState();
     }
-  ]
 
-};
+    function animateTo(nextIndex, dir){
+      if (animating) return;
+      if (nextIndex < 0 || nextIndex >= steps.length) return;
 
-let currentGuide = "newbie";
-let steps = guides[currentGuide];
-let index = 0;
-let usingA = true;
-let animating = false;
+      animating = true;
 
-const slideA = document.getElementById("slideA");
-const slideB = document.getElementById("slideB");
-const textEl = document.getElementById("text");
-const stepEl = document.getElementById("step");
+      const current = usingA ? slideA : slideB;
+      const next = usingA ? slideB : slideA;
 
-function loadStep(){
-  slideA.src = steps[0].img;
-  textEl.textContent = steps[0].text;
-  stepEl.textContent = `Step 1 / ${steps.length}`;
-}
+      // 位移距離（px）— 想更明顯可改 50
+      const outX = (dir === "next") ? -30 : 30;
+      const inX  = (dir === "next") ? 30 : -30;
 
-function switchGuide(type, el){
-  currentGuide = type;
-  steps = guides[type];
-  index = 0;
+      next.src = steps[nextIndex].img;
 
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  el.classList.add("active");
+      // next 先在旁邊 + 透明
+      next.style.transition = "none";
+      next.style.opacity = "0";
+      next.style.transform = `translateX(${inX}px)`;
+      next.offsetHeight; // reflow
 
-  loadStep();
-}
+      // 啟動動畫
+      current.style.transition = "transform 0.42s ease, opacity 0.42s ease";
+      next.style.transition = "transform 0.42s ease, opacity 0.42s ease";
 
-function next(){
-  if(index >= steps.length-1) return;
-  index++;
-  update();
-}
+      requestAnimationFrame(() => {
+        current.style.opacity = "0";
+        current.style.transform = `translateX(${outX}px)`;
 
-function prev(){
-  if(index <= 0) return;
-  index--;
-  update();
-}
+        next.style.opacity = "1";
+        next.style.transform = "translateX(0)";
+      });
 
-function update(){
-  slideA.src = steps[index].img;
-  textEl.textContent = steps[index].text;
-  stepEl.textContent = `Step ${index+1} / ${steps.length}`;
-}
+      const onDone = () => {
+        // current 重置
+        current.style.transition = "none";
+        current.style.opacity = "0";
+        current.style.transform = "translateX(0)";
 
-document.addEventListener("keydown", e=>{
-  if(e.key==="ArrowRight") next();
-  if(e.key==="ArrowLeft") prev();
-});
+        usingA = !usingA;
+        index = nextIndex;
 
-loadStep();
-</script>
+        setTextImmediate();
+        setNavState();
+
+        animating = false;
+        next.removeEventListener("transitionend", onDone);
+      };
+
+      next.addEventListener("transitionend", onDone, { once: true });
+    }
+
+    function next(){
+      if (index >= steps.length - 1) return;
+      animateTo(index + 1, "next");
+    }
+
+    function prev(){
+      if (index <= 0) return;
+      animateTo(index - 1, "prev");
+    }
+
+    // 按鈕
+    btnNext.addEventListener("click", next);
+    btnPrev.addEventListener("click", prev);
+
+    // 鍵盤
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") next();
+      if (e.key === "ArrowLeft") prev();
+    });
+
+    // 分類切換
+    tabs.forEach(t => {
+      t.addEventListener("click", () => {
+        const g = t.getAttribute("data-guide");
+        if (!g || g === currentGuide) return;
+
+        currentGuide = g;
+        steps = guides[currentGuide] || [];
+        tabs.forEach(x => x.classList.toggle("active", x === t));
+
+        // 切換攻略：直接顯示第 1 步（不跑動畫，避免怪異狀態）
+        if (!steps.length) {
+          textEl.textContent = "此攻略尚未加入步驟。";
+          slideA.src = "";
+          slideB.src = "";
+          index = 0;
+          setNavState();
+          return;
+        }
+        hardSetStep(0);
+      });
+    });
+
+    // 初始化
+    (function init(){
+      if (!steps.length) {
+        textEl.textContent = "請在 guides 裡加入教學資料。";
+        btnPrev.classList.add("disabled");
+        btnNext.classList.add("disabled");
+        return;
+      }
+      hardSetStep(0);
+    })();
+  </script>
 </body>
 </html>
