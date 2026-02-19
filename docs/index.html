@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>教學手冊</title>
+
+<style>
+body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto;
+    background: linear-gradient(135deg,#0f172a,#1e293b);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.container{
+    width:900px;
+    max-width:95%;
+    background:rgba(255,255,255,0.05);
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.4);
+    backdrop-filter: blur(20px);
+}
+
+.viewer{
+    position:relative;
+    text-align:center;
+}
+
+.viewer img{
+    max-width:100%;
+    max-height:450px;
+    border-radius:15px;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.arrow{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:30px;
+    cursor:pointer;
+    user-select:none;
+    padding:10px 15px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.1);
+    transition:0.2s;
+}
+
+.arrow:hover{
+    background:rgba(99,102,241,0.5);
+}
+
+.left{ left:-20px; }
+.right{ right:-20px; }
+
+.text{
+    margin-top:20px;
+    line-height:1.6;
+    font-size:16px;
+    opacity:0.9;
+}
+
+.step{
+    margin-top:15px;
+    font-size:13px;
+    opacity:0.6;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="viewer">
+        <div class="arrow left" onclick="prev()">‹</div>
+        <img id="slide" src="assets/step1.png">
+        <div class="arrow right" onclick="next()">›</div>
+    </div>
+
+    <div class="text" id="text">
+        這是步驟 1 的說明文字。
+    </div>
+
+    <div class="step" id="step">
+        Step 1 / 2
+    </div>
+
+</div>
+
+<script>
+const steps = [
+    {
+        img:"assets/step1.png",
+        text:"這是步驟 1 的說明文字。"
+    },
+    {
+        img:"assets/step2.png",
+        text:"這是步驟 2 的說明文字。"
+    }
+];
+
+let index = 0;
+
+function update(){
+    const slide = document.getElementById("slide");
+    const text = document.getElementById("text");
+    const step = document.getElementById("step");
+
+    slide.style.opacity = 0;
+
+    setTimeout(()=>{
+        slide.src = steps[index].img;
+        text.innerText = steps[index].text;
+        step.innerText = `Step ${index+1} / ${steps.length}`;
+        slide.style.opacity = 1;
+    },200);
+}
+
+function next(){
+    if(index < steps.length-1){
+        index++;
+        update();
+    }
+}
+
+function prev(){
+    if(index > 0){
+        index--;
+        update();
+    }
+}
+
+document.addEventListener("keydown", e=>{
+    if(e.key === "ArrowRight") next();
+    if(e.key === "ArrowLeft") prev();
+});
+</script>
+
+</body>
+</html>
