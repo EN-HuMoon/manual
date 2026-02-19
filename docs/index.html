@@ -33,7 +33,7 @@
       display:flex;
       justify-content:center;
       align-items:center;
-      padding: 10px;
+      padding: 10px 36px; /* ✅ 左右留空，按鈕更不會壓到圖片 */
     }
 
     /* ✅ 兩張圖片重疊做轉場 */
@@ -57,7 +57,6 @@
       position:absolute;
       z-index:2;
       opacity:0;
-      /* 初始位置給 JS 控制 */
       transform: translateX(0);
     }
 
@@ -95,11 +94,23 @@
       pointer-events:none;
     }
 
-    .left{ left:10px; }
-    .right{ right:10px; }
+    /* ✅ 按鈕往外挪，不壓到圖片 */
+    .left{ left:-18px; }
+    .right{ right:-18px; }
+
+    /* ✅ 圖片下方的現代玻璃資訊區（第二層背景） */
+    .panel{
+      margin-top: 18px;
+      padding: 16px 16px 14px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 14px 40px rgba(0,0,0,.28);
+      backdrop-filter: blur(14px);
+    }
 
     .text{
-      margin-top:18px;
+      margin-top:0;
       line-height:1.7;
       font-size:16px;
       opacity:0.92;
@@ -108,8 +119,10 @@
 
     .step{
       margin-top:12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,.10);
       font-size:13px;
-      opacity:0.65;
+      opacity:0.75;
       display:flex;
       justify-content:space-between;
       align-items:center;
@@ -119,15 +132,16 @@
 
     .hint{
       font-size:12px;
-      opacity:0.7;
+      opacity:0.85;
+      margin-left: 6px;
     }
 
     .kbd{
       display:flex;
       gap:6px;
       align-items:center;
-      opacity:0.65;
       font-size:12px;
+      opacity:0.85;
     }
     .key{
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
@@ -153,15 +167,18 @@
       <div class="arrow right" id="btnNext" title="下一頁 (→)">›</div>
     </div>
 
-    <div class="text" id="text">載入中...</div>
+    <!-- ✅ 第二層背景：現代玻璃卡片區 -->
+    <div class="panel">
+      <div class="text" id="text">載入中...</div>
 
-    <div class="step">
-      <div>
-        <span id="stepLabel">Step 1 / 1</span>
-        <span class="hint" id="hint"></span>
-      </div>
-      <div class="kbd">
-        <span class="key">←</span><span class="key">→</span>
+      <div class="step">
+        <div>
+          <span id="stepLabel">Step 1 / 1</span>
+          <span class="hint" id="hint"></span>
+        </div>
+        <div class="kbd">
+          <span class="key">←</span><span class="key">→</span>
+        </div>
       </div>
     </div>
 
@@ -214,7 +231,7 @@
       const current = usingA ? slideA : slideB;
       const next = usingA ? slideB : slideA;
 
-      // 你可以調整位移距離（px）
+      // 位移距離（px）— 想更明顯就改 50
       const outX = (dir === "next") ? -30 : 30;
       const inX  = (dir === "next") ? 30 : -30;
 
@@ -242,7 +259,7 @@
 
       // 動畫結束後收尾
       const onDone = () => {
-        // 把 current 重置成待機狀態（避免下次跳動）
+        // current 重置
         current.style.transition = "none";
         current.style.opacity = "0";
         current.style.transform = "translateX(0)";
