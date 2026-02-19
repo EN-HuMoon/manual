@@ -75,6 +75,10 @@
       box-shadow: 0 10px 40px rgba(0,0,0,.35);
       user-select:none;
       -webkit-user-drag:none;
+
+      /* ✅ 一點點抗閃爍：讓瀏覽器更穩定合成 */
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
     }
     #slideA{
       opacity:1;
@@ -233,7 +237,7 @@
   </div>
 
   <script>
-    /* ✅ 三類攻略步驟：你給的新手攻略已完整放進來 */
+    /* ✅ 三類攻略步驟：保留你目前資料 */
     const guides = {
       newbie: [
         {
@@ -288,7 +292,6 @@
         },
       ],
 
-      /* 先幫你放「占位」內容，你之後把 img/text 換成你的圖與文字就行 */
       enhance: [
         {
           img: "assets/step1.png",
@@ -334,6 +337,34 @@
     const btnNext = document.getElementById("btnNext");
     const tabs = Array.from(document.querySelectorAll(".tab"));
 
+    // ✅ 預載圖片快取（避免第一次切換閃圖）
+    const preloadCache = new Map();
+    function preloadImage(src){
+      if (!src) return Promise.resolve();
+      if (preloadCache.has(src)) return preloadCache.get(src);
+
+      const p = new Promise((resolve) => {
+        const img = new Image();
+        img.onload = async () => {
+          // decode 可以避免「載入完成但解碼未完成」造成的瞬間閃爍
+          if (img.decode) {
+            try { await img.decode(); } catch (e) {}
+          }
+          resolve();
+        };
+        img.onerror = () => resolve(); // 不阻塞
+        img.src = src;
+      });
+
+      preloadCache.set(src, p);
+      return p;
+    }
+
+    async function preloadGuideImages(list){
+      // 不用 await 全部也行，但你這種教學頁通常圖片不多，先 preload 會最穩
+      await Promise.all(list.map(s => preloadImage(s.img)));
+    }
+
     function setNavState(){
       btnPrev.classList.toggle("disabled", index === 0);
       btnNext.classList.toggle("disabled", index === steps.length - 1);
@@ -350,26 +381,35 @@
       }, 90);
     }
 
-    function hardSetStep(i){
-      // 切換攻略時：不跑動畫，直接顯示第一步（更穩）
+    async function hardSetStep(i){
       index = i;
 
+      // ✅ 確保第一張也載入/解碼完成再顯示（避免初次切換殘影）
+      await preloadImage(steps[index].img);
+
       slideA.src = steps[index].img;
+      slideA.style.transition = "none";
       slideA.style.opacity = "1";
       slideA.style.transform = "translateX(0)";
 
       slideB.src = "";
+      slideB.style.transition = "none";
       slideB.style.opacity = "0";
       slideB.style.transform = "translateX(0)";
 
       usingA = true;
       animating = false;
 
+      // 恢復 transition（避免下一次動畫不見）
+      slideA.offsetHeight;
+      slideA.style.transition = "transform 0.42s ease, opacity 0.42s ease";
+      slideB.style.transition = "transform 0.42s ease, opacity 0.42s ease";
+
       setTextImmediate();
       setNavState();
     }
 
-    function animateTo(nextIndex, dir){
+    async function animateTo(nextIndex, dir){
       if (animating) return;
       if (nextIndex < 0 || nextIndex >= steps.length) return;
 
@@ -378,19 +418,22 @@
       const current = usingA ? slideA : slideB;
       const next = usingA ? slideB : slideA;
 
-      // 位移距離（px）— 想更明顯可改 50
       const outX = (dir === "next") ? -30 : 30;
       const inX  = (dir === "next") ? 30 : -30;
 
-      next.src = steps[nextIndex].img;
+      // ✅ 先確保「下一張」已載入/解碼完成，再開始動畫（根治閃圖）
+      const nextSrc = steps[nextIndex].img;
+      await preloadImage(nextSrc);
 
-      // next 先在旁邊 + 透明
+      next.src = nextSrc;
+
+      // next 先在旁邊 + 透明（先關 transition）
       next.style.transition = "none";
       next.style.opacity = "0";
       next.style.transform = `translateX(${inX}px)`;
-      next.offsetHeight; // reflow
+      next.offsetHeight;
 
-      // 啟動動畫
+      // 開 transition
       current.style.transition = "transform 0.42s ease, opacity 0.42s ease";
       next.style.transition = "transform 0.42s ease, opacity 0.42s ease";
 
@@ -403,7 +446,7 @@
       });
 
       const onDone = () => {
-        // current 重置
+        // current 重置並隱藏（但不清 src，避免某些瀏覽器重繪抖動）
         current.style.transition = "none";
         current.style.opacity = "0";
         current.style.transform = "translateX(0)";
@@ -443,7 +486,7 @@
 
     // 分類切換
     tabs.forEach(t => {
-      t.addEventListener("click", () => {
+      t.addEventListener("click", async () => {
         const g = t.getAttribute("data-guide");
         if (!g || g === currentGuide) return;
 
@@ -451,7 +494,6 @@
         steps = guides[currentGuide] || [];
         tabs.forEach(x => x.classList.toggle("active", x === t));
 
-        // 切換攻略：直接顯示第 1 步（不跑動畫，避免怪異狀態）
         if (!steps.length) {
           textEl.textContent = "此攻略尚未加入步驟。";
           slideA.src = "";
@@ -460,19 +502,25 @@
           setNavState();
           return;
         }
-        hardSetStep(0);
+
+        // ✅ 切換攻略時先 preload 該攻略，第一頁切換不閃
+        await preloadGuideImages(steps);
+        await hardSetStep(0);
       });
     });
 
     // 初始化
-    (function init(){
+    (async function init(){
       if (!steps.length) {
         textEl.textContent = "請在 guides 裡加入教學資料。";
         btnPrev.classList.add("disabled");
         btnNext.classList.add("disabled");
         return;
       }
-      hardSetStep(0);
+
+      // ✅ 初始化先 preload 當前攻略，避免第一次換頁閃上一張
+      await preloadGuideImages(steps);
+      await hardSetStep(0);
     })();
   </script>
 </body>
